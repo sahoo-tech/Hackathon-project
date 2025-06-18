@@ -1,8 +1,18 @@
 import axios from 'axios';
 
+// Determine the base URL based on the environment
+const getBaseUrl = () => {
+  // If running on Vercel, use relative path for API
+  if (process.env.VERCEL) {
+    return '/api';
+  }
+  // For local development
+  return 'http://localhost:8000/api';
+};
+
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: getBaseUrl(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

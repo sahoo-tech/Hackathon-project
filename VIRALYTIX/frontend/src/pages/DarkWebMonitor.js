@@ -121,23 +121,23 @@ ${sourcesSection}
     setReport(null);
     
     try {
-      // For demo purposes, use mock data instead of making an actual API call
-      setTimeout(() => {
+      // Try to use the API endpoint first
+      try {
+        const response = await axios.post('/api/llm/dark-web-surveillance', {
+          keywords,
+          timeframe_days: timeframe,
+          include_sources: includeSources,
+        });
+        setReport(response.data.content);
+      } catch (apiError) {
+        console.log('API call failed, using mock data instead', apiError);
+        // Fallback to mock data if API call fails
         const mockReport = generateMockReport();
         setReport(mockReport);
-        setLoading(false);
-      }, 1500); // Simulate network delay
-      
-      // In a production environment, you would use this code:
-      /*
-      const response = await axios.post('/api/llm/dark-web-surveillance', {
-        keywords,
-        timeframe_days: timeframe,
-        include_sources: includeSources,
-      });
-      setReport(response.data.content);
-      */
+      }
+      setLoading(false);
     } catch (err) {
+      console.error('Error in surveillance:', err);
       setError('Failed to fetch surveillance report. Please try again.');
       setLoading(false);
     }

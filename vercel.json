@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "buildCommand": "cd VIRALYTIX/frontend && npm install && npm run build",
+  "outputDirectory": "VIRALYTIX/frontend/build",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/serverless.js"
+    }
+  ],
+  "functions": {
+    "api/serverless.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
+}
