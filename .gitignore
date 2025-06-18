@@ -1,9 +1,13 @@
 # Node.js dependencies
 node_modules/
+**/node_modules/
+**/.cache/
 
 # Python virtual environments
 venv/
+**/venv/
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -17,10 +21,14 @@ __pycache__/
 # Build files
 /build
 /dist
+**/build/
+**/dist/
 
 # IDE files
 .idea/
 .vscode/
+**/.idea/
+**/.vscode/
 *.swp
 *.swo
 
