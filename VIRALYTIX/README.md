@@ -1,7 +1,5 @@
 # VIRALYTIX: Advanced Virus Outbreak Analysis Platform
 
-![VIRALYTIX Logo](https://via.placeholder.com/800x200/0d47a1/ffffff?text=VIRALYTIX)
-
 VIRALYTIX is a comprehensive platform for monitoring, analyzing, and predicting viral outbreaks using advanced AI, blockchain technology, and real-time data analysis. The platform integrates multiple data sources to provide actionable insights for public health officials, researchers, and policymakers.
 
 ## Table of Contents
@@ -286,10 +284,3 @@ Comprehensive API documentation is available at `http://localhost:8000/docs` whe
 - Blockchain integration
 - Anonymous reporting
 
-## Contributing
-
-We welcome contributions to VIRALYTIX! Please see our [Contributing Guidelines](CONTRIBUTING.md) for more information.
-
-## License
-
-VIRALYTIX is licensed under the [MIT License](LICENSE).
