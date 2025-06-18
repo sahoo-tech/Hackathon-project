@@ -2,10 +2,21 @@ import axios from 'axios';
 
 // Determine the base URL based on the environment
 const getBaseUrl = () => {
+  // If we have a custom backend URL set
+  if (process.env.REACT_APP_BACKEND_URL) {
+    return `${process.env.REACT_APP_BACKEND_URL}/api`;
+  }
+  
   // If running on Vercel, use relative path for API
   if (process.env.VERCEL) {
     return '/api';
   }
+  
+  // Production environment - replace with your Render URL after deployment
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://your-app-name.onrender.com/api';
+  }
+  
   // For local development
   return 'http://localhost:8000/api';
 };

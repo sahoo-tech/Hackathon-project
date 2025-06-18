@@ -27,9 +27,28 @@ app = FastAPI(
 )
 
 # Configure CORS
+def get_cors_origins():
+    origins = [
+        "http://localhost:3000",  # Local development
+    ]
+    
+    # Add production frontend URL if specified
+    frontend_url = os.getenv("FRONTEND_URL")
+    if frontend_url:
+        origins.append(frontend_url)
+    
+    # For development/testing, allow Vercel pattern
+    if os.getenv("ENVIRONMENT") == "development":
+        origins.extend([
+            "https://*.vercel.app",
+            "https://*.netlify.app"
+        ])
+    
+    return origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept"],

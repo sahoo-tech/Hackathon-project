@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: viralytix-backend
+    env: python
+    buildCommand: "cd VIRALYTIX/backend && pip install -r requirements.txt"
+    startCommand: "cd VIRALYTIX/backend && python main.py"
+    rootDir: VIRALYTIX/backend
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: PORT
+        value: 8000
+      - key: ENVIRONMENT
+        value: production
+      # Add your other environment variables here
+      # - key: DATABASE_URL
+      #   sync: false
+      # - key: SECRET_KEY
+      #   sync: false
