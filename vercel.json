@@ -1,7 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd VIRALYTIX/frontend && npm install && npm run build",
+  "buildCommand": "bash ./build.sh",
   "outputDirectory": "VIRALYTIX/frontend/build",
+  "installCommand": "npm install --no-save",
   "rewrites": [
     {
       "source": "/api/(.*)",

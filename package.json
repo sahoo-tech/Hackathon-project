@@ -4,9 +4,16 @@
   "private": true,
   "scripts": {
     "build": "node build.js",
-    "start": "cd VIRALYTIX/frontend && npm start"
+    "start": "cd VIRALYTIX/frontend && npm start",
+    "dev": "cd VIRALYTIX/frontend && npm run dev"
   },
   "engines": {
     "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }
