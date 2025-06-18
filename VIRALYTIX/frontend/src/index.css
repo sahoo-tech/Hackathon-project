@@ -1,0 +1,85 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.mapboxgl-map {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.map-container {
+  height: 500px;
+  width: 100%;
+  position: relative;
+}
+
+.map-overlay {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 4px;
+  z-index: 1;
+  max-width: 300px;
+}
+
+.heatmap-legend {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.heatmap-legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.heatmap-legend-color {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: 3px;
+}
+
+.popup {
+  max-width: 300px;
+}
+
+.popup h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.popup-data {
+  margin-bottom: 5px;
+}
+
+.popup-risk {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.risk-high {
+  color: #d32f2f;
+}
+
+.risk-medium {
+  color: #f57c00;
+}
+
+.risk-low {
+  color: #388e3c;
+}
