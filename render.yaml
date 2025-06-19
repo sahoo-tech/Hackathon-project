@@ -2,8 +2,8 @@ services:
   - type: web
     name: viralytix-backend
     env: python
-    buildCommand: "cd VIRALYTIX/backend && pip install -r requirements.txt"
-    startCommand: "cd VIRALYTIX/backend && python main.py"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python main.py"
     rootDir: VIRALYTIX/backend
     plan: free
     envVars:
@@ -18,3 +18,5 @@ services:
       #   sync: false
       # - key: SECRET_KEY
       #   sync: false
+      # - key: FRONTEND_URL
+      #   value: https://your-frontend-url.com
