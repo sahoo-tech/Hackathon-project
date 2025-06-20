@@ -2,17 +2,19 @@ services:
   - type: web
     name: viralytix-backend
     env: python
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install --upgrade pip setuptools wheel && pip install torch==2.1.0+cpu --index-url https://download.pytorch.org/whl/cpu && pip install --no-cache-dir -r requirements.txt"
     startCommand: "python main.py"
     rootDir: VIRALYTIX/backend
     plan: free
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11
+        value: 3.11.6
       - key: PORT
         value: 8000
       - key: ENVIRONMENT
         value: production
+      - key: PIP_NO_CACHE_DIR
+        value: 1
       # Add your other environment variables here
       # - key: DATABASE_URL
       #   sync: false
