@@ -3,22 +3,29 @@ services:
     name: viralytix-backend
     env: python
     buildCommand: "pip install --upgrade pip setuptools wheel && pip install torch==2.1.0+cpu --index-url https://download.pytorch.org/whl/cpu && pip install --no-cache-dir bcrypt==4.0.1 && pip install --no-cache-dir -r requirements.txt"
-    startCommand: "python main.py"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     rootDir: VIRALYTIX/backend
     plan: free
+    region: oregon
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.6
-      - key: PORT
-        value: 8000
       - key: ENVIRONMENT
         value: production
+      - key: HOST
+        value: 0.0.0.0
       - key: PIP_NO_CACHE_DIR
         value: 1
+      - key: FRONTEND_URL
+        value: https://hackathon-project-egq7.vercel.app
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
       # Add your other environment variables here
       # - key: DATABASE_URL
       #   sync: false
-      # - key: SECRET_KEY
+      # - key: MONGODB_URL
       #   sync: false
-      # - key: FRONTEND_URL
-      #   value: https://hackathon-project-egq7.vercel.app/
+      # - key: REDIS_URL
+      #   sync: false

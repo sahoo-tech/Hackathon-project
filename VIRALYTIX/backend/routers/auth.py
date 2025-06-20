@@ -5,13 +5,17 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from typing import Optional
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 router = APIRouter()
 
 # Security configurations
-SECRET_KEY = "REPLACE_WITH_SECURE_KEY_IN_PRODUCTION"
+SECRET_KEY = os.getenv("SECRET_KEY", "REPLACE_WITH_SECURE_KEY_IN_PRODUCTION")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
