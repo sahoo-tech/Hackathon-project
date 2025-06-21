@@ -2,19 +2,24 @@ import axios from 'axios';
 
 // Determine the base URL based on the environment
 const getBaseUrl = () => {
-  // If we have a custom backend URL set
+  // If we have a custom backend URL set (highest priority)
   if (process.env.REACT_APP_BACKEND_URL) {
     return `${process.env.REACT_APP_BACKEND_URL}/api`;
   }
   
-  // If running on Vercel, use relative path for API
+  // If running on Vercel in production, use direct backend URL to avoid CORS issues
+  if (process.env.VERCEL && process.env.NODE_ENV === 'production') {
+    return 'https://viralytix-backend.onrender.com/api';
+  }
+  
+  // If running on Vercel in development, use relative path for API
   if (process.env.VERCEL) {
     return '/api';
   }
   
-  // Production environment - replace with your Render URL after deployment
+  // Production environment - using Render backend URL
   if (process.env.NODE_ENV === 'production') {
-    return 'https://your-app-name.onrender.com/api';
+    return 'https://viralytix-backend.onrender.com/api';
   }
   
   // For local development
@@ -22,9 +27,12 @@ const getBaseUrl = () => {
 };
 
 // Create an axios instance with default config
+const baseURL = getBaseUrl();
+console.log('API Base URL:', baseURL); // Debug log
+
 const api = axios.create({
-  baseURL: getBaseUrl(),
-  timeout: 10000,
+  baseURL: baseURL,
+  timeout: 30000, // Increased timeout for Render cold starts
   headers: {
     'Content-Type': 'application/json',
   }

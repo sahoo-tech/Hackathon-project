@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/serverless.js"
+      "destination": "https://viralytix-backend.onrender.com/api/$1"
     }
   ],
   "functions": {
