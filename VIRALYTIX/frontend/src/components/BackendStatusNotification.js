@@ -14,6 +14,7 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import {
   CloudOff,
   Refresh,
@@ -129,6 +130,7 @@ function SlideTransition(props) {
 }
 
 const BackendStatusNotification = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -217,12 +219,20 @@ const BackendStatusNotification = () => {
   };
 
   const handleLoginRedirect = () => {
-    // Clear any existing authentication data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // Close the notification first
+    setStatus(prev => ({ ...prev, show: false }));
     
-    // Force a complete page reload to the login page
-    window.location.replace('/login');
+    // Check if user is already authenticated
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+      // User is already logged in, go to dashboard
+      navigate('/');
+    } else {
+      // User needs to login
+      navigate('/login');
+    }
   };
 
   if (!status.show && !showSuccess && !showError) {
@@ -328,7 +338,7 @@ const BackendStatusNotification = () => {
                   }
                 }}
               >
-                Go to Login
+                Continue to App
               </Button>
             </Box>
           )}
