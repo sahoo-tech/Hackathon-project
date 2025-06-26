@@ -1,6 +1,7 @@
 {
   "short_name": "VIRALYTIX",
   "name": "VIRALYTIX - Viral Outbreak Monitoring Platform",
+  "description": "Advanced viral outbreak monitoring and prediction platform",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,23 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#667eea",
+  "background_color": "#f5f5f5",
+  "categories": ["health", "medical", "productivity"],
+  "lang": "en",
+  "scope": "/",
+  "prefer_related_applications": false
 }

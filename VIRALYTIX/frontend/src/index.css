@@ -1,3 +1,15 @@
+/* Mobile-first responsive design */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* Prevent zoom on iOS Safari */
+  -webkit-text-size-adjust: 100%;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,6 +17,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
+  /* Better touch scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 code {
@@ -24,6 +40,13 @@ code {
   position: relative;
 }
 
+/* Mobile responsive map container */
+@media (max-width: 768px) {
+  .map-container {
+    height: 300px;
+  }
+}
+
 .map-overlay {
   position: absolute;
   bottom: 20px;
@@ -33,6 +56,18 @@ code {
   border-radius: 4px;
   z-index: 1;
   max-width: 300px;
+}
+
+/* Mobile responsive map overlay */
+@media (max-width: 768px) {
+  .map-overlay {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    padding: 8px;
+    font-size: 0.875rem;
+  }
 }
 
 .heatmap-legend {
@@ -82,4 +117,89 @@ code {
 
 .risk-low {
   color: #388e3c;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  /* Ensure touch targets are at least 44px */
+  button, .MuiButton-root {
+    min-height: 44px;
+  }
+  
+  /* Better spacing for mobile */
+  .MuiContainer-root {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  /* Responsive text sizes */
+  h1, .MuiTypography-h1 {
+    font-size: 2rem !important;
+  }
+  
+  h2, .MuiTypography-h2 {
+    font-size: 1.75rem !important;
+  }
+  
+  h3, .MuiTypography-h3 {
+    font-size: 1.5rem !important;
+  }
+  
+  h4, .MuiTypography-h4 {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Better form inputs on mobile */
+  .MuiTextField-root {
+    margin-bottom: 16px;
+  }
+  
+  /* Responsive tables */
+  .MuiTable-root {
+    font-size: 0.875rem;
+  }
+  
+  /* Better card spacing */
+  .MuiCard-root {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small mobile devices */
+  .MuiContainer-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  
+  /* Smaller text for very small screens */
+  body {
+    font-size: 14px;
+  }
+  
+  /* Stack buttons vertically on very small screens */
+  .MuiDialogActions-root {
+    flex-direction: column;
+  }
+  
+  .MuiDialogActions-root > * {
+    margin: 4px 0 !important;
+    width: 100%;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .map-container {
+    height: 250px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Ensure crisp rendering on high DPI screens */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }

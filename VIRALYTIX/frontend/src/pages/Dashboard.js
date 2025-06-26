@@ -15,7 +15,9 @@ import {
   Chip,
   Button,
   IconButton,
-  Tooltip
+  Tooltip,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -75,16 +77,34 @@ const StatCard = styled(Paper)(({ theme }) => ({
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: isMobile ? 2 : 3,
+        flexDirection: isSmallMobile ? 'column' : 'row',
+        gap: isSmallMobile ? 1 : 0
+      }}>
+        <Typography 
+          variant={isMobile ? "h5" : "h4"} 
+          component="h1" 
+          gutterBottom={!isSmallMobile}
+          sx={{ 
+            fontSize: isSmallMobile ? '1.5rem' : undefined,
+            textAlign: isSmallMobile ? 'center' : 'left'
+          }}
+        >
           Dashboard
         </Typography>
         <Box>
           <Tooltip title="Refresh data">
-            <IconButton>
+            <IconButton size={isMobile ? "small" : "medium"}>
               <RefreshIcon />
             </IconButton>
           </Tooltip>
@@ -92,8 +112,8 @@ const Dashboard = () => {
       </Box>
 
       {/* Stats Overview */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={4}>
+      <Grid container spacing={isMobile ? 2 : 3} sx={{ mb: isMobile ? 3 : 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <StatCard>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               Active Mutations
@@ -106,7 +126,7 @@ const Dashboard = () => {
             </Typography>
           </StatCard>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <StatCard>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               Active Outbreaks
@@ -119,7 +139,7 @@ const Dashboard = () => {
             </Typography>
           </StatCard>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={12} md={4}>
           <StatCard>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               Global Risk Score
@@ -144,9 +164,9 @@ const Dashboard = () => {
       </Grid>
 
       {/* Main Content */}
-      <Grid container spacing={3}>
+      <Grid container spacing={isMobile ? 2 : 3}>
         {/* Recent Mutations */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} lg={6}>
           <StyledCard>
             <CardHeader
               title="Recent Mutations"
@@ -177,6 +197,14 @@ const Dashboard = () => {
                       <ListItemText
                         primary={`${mutation.virus} (${mutation.type})`}
                         secondary={`${mutation.location} • ${mutation.date}`}
+                        primaryTypographyProps={{
+                          fontSize: isMobile ? '0.875rem' : undefined,
+                          noWrap: isSmallMobile
+                        }}
+                        secondaryTypographyProps={{
+                          fontSize: isMobile ? '0.75rem' : undefined,
+                          noWrap: isSmallMobile
+                        }}
                       />
                     </ListItem>
                     {index < mockData.recentMutations.length - 1 && <Divider component="li" />}
@@ -185,11 +213,19 @@ const Dashboard = () => {
               </List>
             </CardContent>
             <Divider />
-            <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ 
+              p: isMobile ? 1.5 : 2, 
+              display: 'flex', 
+              justifyContent: isSmallMobile ? 'center' : 'flex-end' 
+            }}>
               <Button 
-                size="small" 
+                size={isMobile ? "small" : "small"}
                 color="primary"
                 onClick={() => navigate('/mutations')}
+                fullWidth={isSmallMobile}
+                sx={{
+                  fontSize: isSmallMobile ? '0.75rem' : undefined
+                }}
               >
                 View All Mutations
               </Button>
@@ -198,7 +234,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* Recent Outbreaks */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} lg={6}>
           <StyledCard>
             <CardHeader
               title="Active Outbreaks"
@@ -215,17 +251,38 @@ const Dashboard = () => {
                   <React.Fragment key={outbreak.id}>
                     <ListItem
                       secondaryAction={
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          flexDirection: isSmallMobile ? 'column' : 'row',
+                          gap: isSmallMobile ? 0.5 : 0
+                        }}>
                           {outbreak.trend === 'up' ? (
-                            <TrendingUpIcon color="error" sx={{ mr: 1 }} />
+                            <TrendingUpIcon 
+                              color="error" 
+                              sx={{ 
+                                mr: isSmallMobile ? 0 : 1,
+                                fontSize: isMobile ? '1rem' : undefined
+                              }} 
+                            />
                           ) : (
-                            <TrendingDownIcon color="success" sx={{ mr: 1 }} />
+                            <TrendingDownIcon 
+                              color="success" 
+                              sx={{ 
+                                mr: isSmallMobile ? 0 : 1,
+                                fontSize: isMobile ? '1rem' : undefined
+                              }} 
+                            />
                           )}
                           <Chip 
                             label={outbreak.status}
                             color={outbreak.status === 'active' ? 'error' : 
                                    outbreak.status === 'contained' ? 'warning' : 'success'}
-                            size="small"
+                            size={isMobile ? "small" : "small"}
+                            sx={{
+                              fontSize: isSmallMobile ? '0.7rem' : undefined,
+                              height: isSmallMobile ? '20px' : undefined
+                            }}
                           />
                         </Box>
                       }
@@ -236,6 +293,14 @@ const Dashboard = () => {
                       <ListItemText
                         primary={`${outbreak.virus} in ${outbreak.location}`}
                         secondary={`${outbreak.cases.toLocaleString()} confirmed cases`}
+                        primaryTypographyProps={{
+                          fontSize: isMobile ? '0.875rem' : undefined,
+                          noWrap: isSmallMobile
+                        }}
+                        secondaryTypographyProps={{
+                          fontSize: isMobile ? '0.75rem' : undefined,
+                          noWrap: isSmallMobile
+                        }}
                       />
                     </ListItem>
                     {index < mockData.recentOutbreaks.length - 1 && <Divider component="li" />}
@@ -244,11 +309,19 @@ const Dashboard = () => {
               </List>
             </CardContent>
             <Divider />
-            <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ 
+              p: isMobile ? 1.5 : 2, 
+              display: 'flex', 
+              justifyContent: isSmallMobile ? 'center' : 'flex-end' 
+            }}>
               <Button 
-                size="small" 
+                size={isMobile ? "small" : "small"}
                 color="primary"
                 onClick={() => navigate('/outbreaks')}
+                fullWidth={isSmallMobile}
+                sx={{
+                  fontSize: isSmallMobile ? '0.75rem' : undefined
+                }}
               >
                 View Outbreak Map
               </Button>

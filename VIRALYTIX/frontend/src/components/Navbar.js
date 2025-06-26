@@ -9,7 +9,9 @@ import {
   MenuItem, 
   Badge,
   Avatar,
-  Tooltip
+  Tooltip,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -18,6 +20,10 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 
 const Navbar = ({ toggleSidebar, user, onLogout }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
@@ -72,26 +78,38 @@ const Navbar = ({ toggleSidebar, user, onLogout }) => {
           <MenuIcon />
         </IconButton>
         
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} tabIndex={0}>
-          VIRALYTIX
+        <Typography 
+          variant={isMobile ? "h6" : "h6"} 
+          component="div" 
+          sx={{ 
+            flexGrow: 1,
+            fontSize: isSmallMobile ? '1rem' : '1.25rem',
+            fontWeight: 'bold'
+          }} 
+          tabIndex={0}
+        >
+          {isSmallMobile ? "VLX" : "VIRALYTIX"}
         </Typography>
 
-        {/* Dark Mode Toggle */}
-        <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
-          <IconButton color="inherit" onClick={toggleDarkMode}>
-            {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-          </IconButton>
-        </Tooltip>
+        {/* Dark Mode Toggle - Hide on small mobile */}
+        {!isSmallMobile && (
+          <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+            <IconButton color="inherit" onClick={toggleDarkMode}>
+              {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Tooltip>
+        )}
         
         {/* Notifications */}
-        <Box sx={{ mr: 2 }}>
+        <Box sx={{ mr: isMobile ? 1 : 2 }}>
           <Tooltip title="Notifications">
             <IconButton
               color="inherit"
               onClick={handleNotificationMenu}
+              size={isMobile ? "small" : "medium"}
             >
               <Badge badgeContent={unreadCount} color="error">
-                <NotificationsIcon />
+                <NotificationsIcon fontSize={isMobile ? "small" : "medium"} />
               </Badge>
             </IconButton>
           </Tooltip>
@@ -109,7 +127,8 @@ const Navbar = ({ toggleSidebar, user, onLogout }) => {
                   onClick={handleNotificationClose}
                   sx={{ 
                     fontWeight: notification.read ? 'normal' : 'bold',
-                    minWidth: '250px'
+                    minWidth: isMobile ? '200px' : '250px',
+                    fontSize: isMobile ? '0.875rem' : '1rem'
                   }}
                 >
                   {notification.message}
@@ -127,6 +146,7 @@ const Navbar = ({ toggleSidebar, user, onLogout }) => {
             <IconButton
               color="inherit"
               onClick={handleMenu}
+              size={isMobile ? "small" : "medium"}
             >
               {user?.avatar ? (
                 <Avatar 

@@ -28,6 +28,8 @@ import {
   DialogActions,
   FormControl,
   InputLabel,
+  useTheme,
+  useMediaQuery,
   Select,
   MenuItem
 } from '@mui/material';
@@ -134,11 +136,15 @@ const mockMutations = [
 ];
 
 const MutationTracker = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [mutations, setMutations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 3 : 5);
   const [selectedMutation, setSelectedMutation] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [addMutationOpen, setAddMutationOpen] = useState(false);

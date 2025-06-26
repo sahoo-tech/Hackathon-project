@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CssBaseline } from '@mui/material';
+import { Box, CssBaseline, useTheme, useMediaQuery } from '@mui/material';
 
 // Components
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import BackendStatusNotification from './components/BackendStatusNotification';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -21,8 +22,12 @@ import ExplainabilityDashboard from './pages/ExplainabilityDashboard';
 import MutationHeatmap from './pages/MutationHeatmap';
 import Settings from './pages/Settings';
 import HelpSupport from './pages/HelpSupport';
+import MobileTestSuite from './components/MobileTestSuite';
 
 function App() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   // Check localStorage for existing auth data
   const checkAuthFromStorage = () => {
     const token = localStorage.getItem('token');
@@ -50,7 +55,8 @@ function App() {
   const initialAuth = checkAuthFromStorage();
   const [isAuthenticated, setIsAuthenticated] = useState(initialAuth.isAuthenticated);
   const [user, setUser] = useState(initialAuth.user);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // On mobile, sidebar should be closed by default
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
   const handleLogin = (userData) => {
     setIsAuthenticated(true);
@@ -71,6 +77,13 @@ function App() {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Close sidebar when switching to mobile view
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile]);
+
   // Protected route component
   const ProtectedRoute = ({ children }) => {
     if (!isAuthenticated) {
@@ -82,6 +95,9 @@ function App() {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
+      
+      {/* Backend Status Notification - Always visible */}
+      <BackendStatusNotification />
       
       {isAuthenticated && (
         <>
@@ -102,11 +118,13 @@ function App() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: isAuthenticated ? 3 : 0,
+          p: isAuthenticated ? (isMobile ? 1 : 3) : 0,
           width: '100%',
           mt: isAuthenticated ? 8 : 0,
-          ml: isAuthenticated ? (sidebarOpen ? '240px' : 0) : 0,
+          ml: isAuthenticated ? (isMobile ? 0 : (sidebarOpen ? '240px' : 0)) : 0,
           transition: 'margin 0.2s',
+          minHeight: '100vh',
+          overflowX: 'hidden',
         }}
       >
         <Routes>
@@ -201,6 +219,12 @@ function App() {
           <Route path="/help" element={
             <ProtectedRoute>
               <HelpSupport />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/mobile-test" element={
+            <ProtectedRoute>
+              <MobileTestSuite />
             </ProtectedRoute>
           } />
           

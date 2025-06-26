@@ -9,7 +9,9 @@ import {
   Box, 
   Toolbar,
   Typography,
-  Collapse
+  Collapse,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -37,6 +39,8 @@ const drawerWidth = 240;
 const Sidebar = ({ open, onClose, user }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [simulationOpen, setSimulationOpen] = React.useState(false);
 
   const handleSimulationClick = () => {
@@ -45,7 +49,8 @@ const Sidebar = ({ open, onClose, user }) => {
 
   const handleNavigation = (path) => {
     navigate(path);
-    if (window.innerWidth < 600) {
+    // Close sidebar on mobile after navigation
+    if (isMobile) {
       onClose();
     }
   };
@@ -136,6 +141,12 @@ const Sidebar = ({ open, onClose, user }) => {
       icon: <GroupsIcon />, 
       path: '/dao',
       roles: ['lab', 'government', 'ngo']
+    },
+    { 
+      text: 'Mobile Test', 
+      icon: <SettingsIcon />, 
+      path: '/mobile-test',
+      roles: ['user', 'lab', 'government', 'ngo']
     }
   ];
 
@@ -146,8 +157,12 @@ const Sidebar = ({ open, onClose, user }) => {
 
   return (
     <Drawer
-      variant="persistent"
+      variant={isMobile ? "temporary" : "persistent"}
       open={open}
+      onClose={onClose}
+      ModalProps={{
+        keepMounted: true, // Better open performance on mobile
+      }}
       sx={{
         width: drawerWidth,
         flexShrink: 0,

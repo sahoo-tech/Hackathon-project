@@ -1,4 +1,5 @@
 import axios from 'axios';
+import backendService from './backendService';
 
 // Determine the base URL based on the environment
 const getBaseUrl = () => {
@@ -52,8 +53,18 @@ api.interceptors.request.use(
 
 // Add a response interceptor to handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Update backend service status on successful response
+    backendService.updateStatus(true);
+    return response;
+  },
   (error) => {
+    // Check if it's a network error (backend offline)
+    if (!error.response && (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK')) {
+      // Update backend service status
+      backendService.updateStatus(false);
+    }
+    
     // Handle 401 Unauthorized errors, but don't redirect for certain endpoints
     if (error.response && error.response.status === 401) {
       const url = error.config.url;
@@ -277,6 +288,18 @@ export const anonymousAlertService = {
   }
 };
 
+// Health check service
+export const healthService = {
+  checkHealth: async () => {
+    const response = await api.get('/health');
+    return response.data;
+  },
+  checkRoot: async () => {
+    const response = await api.get('/');
+    return response.data;
+  }
+};
+
 export default {
   authService,
   mutationService,
@@ -286,5 +309,6 @@ export default {
   blockchainService,
   llmService,
   simulationService,
-  anonymousAlertService
+  anonymousAlertService,
+  healthService
 };

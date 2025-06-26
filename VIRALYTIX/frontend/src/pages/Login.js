@@ -12,7 +12,9 @@ import {
   Select,
   MenuItem,
   Alert,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -23,9 +25,18 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   alignItems: 'center',
   borderRadius: 16,
   boxShadow: '0 8px 40px rgba(0, 0, 0, 0.12)',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(3),
+    borderRadius: 8,
+    margin: theme.spacing(1),
+  },
 }));
 
 const Login = ({ onLogin }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user');
@@ -69,16 +80,31 @@ const Login = ({ onLogin }) => {
         display: 'flex',
         alignItems: 'center',
         background: 'linear-gradient(120deg, #e0f7fa 0%, #bbdefb 100%)',
-        py: 4,
+        py: isMobile ? 2 : 4,
+        px: isMobile ? 1 : 0,
       }}
     >
-      <Container maxWidth="sm">
+      <Container maxWidth={isMobile ? "xs" : "sm"}>
         <StyledPaper>
           <Box sx={{ mb: 3, textAlign: 'center' }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+            <Typography 
+              variant={isMobile ? "h5" : "h4"} 
+              component="h1" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 700,
+                fontSize: isSmallMobile ? '1.5rem' : undefined
+              }}
+            >
               VIRALYTIX
             </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
+            <Typography 
+              variant={isMobile ? "body1" : "subtitle1"} 
+              color="text.secondary"
+              sx={{
+                fontSize: isSmallMobile ? '0.875rem' : undefined
+              }}
+            >
               Advanced Viral Outbreak Monitoring Platform
             </Typography>
           </Box>
