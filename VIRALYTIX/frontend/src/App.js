@@ -16,11 +16,13 @@ import Simulation from './pages/Simulation';
 import DarkWebMonitor from './pages/DarkWebMonitor';
 import DAO from './pages/DAO';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import AnonymousAlert from './pages/AnonymousAlert';
 import EquityMap from './pages/EquityMap';
 import ExplainabilityDashboard from './pages/ExplainabilityDashboard';
 import MutationHeatmap from './pages/MutationHeatmap';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 import HelpSupport from './pages/HelpSupport';
 import MobileTestSuite from './components/MobileTestSuite';
 
@@ -134,6 +136,12 @@ function App() {
               <Login onLogin={handleLogin} />
           } />
           
+          <Route path="/register" element={
+            isAuthenticated ? 
+              <Navigate to="/" /> : 
+              <Register onLogin={handleLogin} />
+          } />
+          
           <Route path="/" element={
             <ProtectedRoute>
               <Dashboard />
@@ -207,6 +215,12 @@ function App() {
           <Route path="/mutation-heatmap" element={
             <ProtectedRoute>
               <MutationHeatmap />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           } />
           

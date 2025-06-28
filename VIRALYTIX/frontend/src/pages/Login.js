@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -14,7 +15,9 @@ import {
   Alert,
   CircularProgress,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Divider,
+  Link
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -36,6 +39,7 @@ const Login = ({ onLogin }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -173,8 +177,42 @@ const Login = ({ onLogin }) => {
             >
               {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
-            <Typography variant="body2" color="text.secondary" align="center">
+            
+            <Box sx={{ textAlign: 'center', width: '100%', mt: 2 }}>
+              <Link
+                component="button"
+                variant="body2"
+                onClick={() => alert('Password reset functionality will be implemented in production')}
+                sx={{ textDecoration: 'underline' }}
+              >
+                Forgot your password?
+              </Link>
+            </Box>
+            
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2, mb: 2 }}>
               For demo purposes: Use any username/password combination
+            </Typography>
+            
+            <Divider sx={{ my: 2, width: '100%' }} />
+            
+            <Box sx={{ textAlign: 'center', width: '100%' }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Don't have an account?
+              </Typography>
+              <Button
+                variant="outlined"
+                color="primary"
+                size="large"
+                fullWidth
+                onClick={() => navigate('/register')}
+                sx={{ py: 1.2 }}
+              >
+                Create New Account
+              </Button>
+            </Box>
+            
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2 }}>
+              Join thousands of researchers, healthcare professionals, and organizations using VIRALYTIX for outbreak monitoring.
             </Typography>
           </Box>
         </StyledPaper>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   AppBar, 
   Toolbar, 
@@ -23,6 +24,7 @@ const Navbar = ({ toggleSidebar, user, onLogout }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
   
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
@@ -52,6 +54,16 @@ const Navbar = ({ toggleSidebar, user, onLogout }) => {
   const handleLogout = () => {
     handleClose();
     onLogout();
+  };
+
+  const handleProfileClick = () => {
+    handleClose();
+    navigate('/profile');
+  };
+
+  const handleSettingsClick = () => {
+    handleClose();
+    navigate('/settings');
   };
 
   // Mock notifications
@@ -169,8 +181,8 @@ const Navbar = ({ toggleSidebar, user, onLogout }) => {
             <MenuItem disabled>
               {user?.name || 'User'} ({user?.role || 'user'})
             </MenuItem>
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
-            <MenuItem onClick={handleClose}>Settings</MenuItem>
+            <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+            <MenuItem onClick={handleSettingsClick}>Settings</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Box>
