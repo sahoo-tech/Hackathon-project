@@ -6,8 +6,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardHeader,
-  Divider,
   Table,
   TableBody,
   TableCell,
@@ -31,7 +29,16 @@ import {
   useTheme,
   useMediaQuery,
   Select,
-  MenuItem
+  MenuItem,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Snackbar
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -40,6 +47,12 @@ import AddIcon from '@mui/icons-material/Add';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import SearchIcon from '@mui/icons-material/Search';
 import InfoIcon from '@mui/icons-material/Info';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import SecurityIcon from '@mui/icons-material/Security';
+import PublicIcon from '@mui/icons-material/Public';
+import RecommendIcon from '@mui/icons-material/Recommend';
+import DownloadIcon from '@mui/icons-material/Download';
 
 // Mock data
 const mockMutations = [
@@ -138,11 +151,9 @@ const mockMutations = [
 const MutationTracker = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [mutations, setMutations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 3 : 5);
   const [selectedMutation, setSelectedMutation] = useState(null);
@@ -151,6 +162,10 @@ const MutationTracker = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [virusFilter, setVirusFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
+  const [analysisOpen, setAnalysisOpen] = useState(false);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisReport, setAnalysisReport] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   // Get unique virus names for filter dropdown
   const virusNames = [...new Set(mockMutations.map(mutation => mutation.virus_name))];
@@ -229,6 +244,113 @@ const MutationTracker = () => {
           } 
         : mutation
     ));
+  };
+
+  const handleRunAnalysis = async (mutation) => {
+    setAnalysisLoading(true);
+    setAnalysisOpen(true);
+    
+    // Simulate analysis processing
+    setTimeout(() => {
+      const report = generateAnalysisReport(mutation);
+      setAnalysisReport(report);
+      setAnalysisLoading(false);
+      setSnackbarOpen(true);
+    }, 3000);
+  };
+
+  const generateAnalysisReport = (mutation) => {
+    const currentDate = new Date().toLocaleDateString();
+    const reportId = `ANALYSIS-${mutation.id}-${Date.now()}`;
+    
+    return {
+      id: reportId,
+      mutation: mutation,
+      generatedDate: currentDate,
+      analysisResults: {
+        riskAssessment: {
+          overallRisk: mutation.risk_score,
+          transmissibilityRisk: Math.min(mutation.risk_score + 0.1, 1.0),
+          severityRisk: Math.max(mutation.risk_score - 0.15, 0.1),
+          vaccineEvasionRisk: mutation.risk_score * 0.8,
+          therapeuticResistanceRisk: mutation.risk_score * 0.6
+        },
+        genomicAnalysis: {
+          sequenceLength: mutation.genome_sequence.length,
+          gcContent: calculateGCContent(mutation.genome_sequence),
+          novelMutations: Math.floor(Math.random() * 5) + 1,
+          conservedRegions: Math.floor(Math.random() * 3) + 2,
+          functionalDomains: getFunctionalDomains(mutation.mutation_type)
+        },
+        epidemiologicalImpact: {
+          estimatedR0Change: ((mutation.risk_score - 0.5) * 2).toFixed(2),
+          populationAtRisk: Math.floor(Math.random() * 50000000) + 10000000,
+          geographicSpread: getGeographicSpread(mutation.location.country),
+          timeToDoubling: Math.floor(Math.random() * 14) + 3
+        },
+        recommendations: getRecommendations(mutation),
+        confidence: Math.floor(mutation.risk_score * 100),
+        dataQuality: mutation.verified ? 'High' : 'Medium'
+      }
+    };
+  };
+
+  const calculateGCContent = (sequence) => {
+    const gcCount = (sequence.match(/[GC]/g) || []).length;
+    return ((gcCount / sequence.length) * 100).toFixed(1);
+  };
+
+  const getFunctionalDomains = (mutationType) => {
+    const domains = {
+      'Spike protein': ['Receptor Binding Domain', 'Furin Cleavage Site', 'Fusion Peptide'],
+      'Hemagglutinin': ['Receptor Binding Site', 'Fusion Domain', 'Antigenic Sites'],
+      'Nucleocapsid': ['RNA Binding Domain', 'Dimerization Domain', 'Nuclear Localization Signal'],
+      'Envelope': ['Membrane Fusion Domain', 'Glycosylation Sites', 'Antigenic Loops'],
+      'NS5': ['RNA Polymerase Domain', 'Methyltransferase Domain', 'Nuclear Localization Signal']
+    };
+    return domains[mutationType] || ['Unknown Domain 1', 'Unknown Domain 2'];
+  };
+
+  const getGeographicSpread = (country) => {
+    const spreads = {
+      'USA': 'Continental spread likely within 2-3 weeks',
+      'Japan': 'Regional spread across Asia-Pacific expected',
+      'UK': 'European spread anticipated within 1-2 weeks',
+      'Thailand': 'Southeast Asian regional spread probable',
+      'Brazil': 'South American continental spread expected'
+    };
+    return spreads[country] || 'Regional spread pattern under assessment';
+  };
+
+  const getRecommendations = (mutation) => {
+    const baseRecommendations = [
+      'Enhanced surveillance in affected regions',
+      'Accelerated vaccine effectiveness studies',
+      'Updated diagnostic test validation'
+    ];
+
+    if (mutation.risk_score > 0.7) {
+      return [
+        ...baseRecommendations,
+        'Immediate public health response activation',
+        'Emergency vaccine strain update consideration',
+        'International travel monitoring enhancement',
+        'Hospital capacity planning and resource allocation'
+      ];
+    } else if (mutation.risk_score > 0.5) {
+      return [
+        ...baseRecommendations,
+        'Increased testing and contact tracing',
+        'Vaccine booster strategy review',
+        'Healthcare system preparedness assessment'
+      ];
+    } else {
+      return [
+        ...baseRecommendations,
+        'Continued monitoring and data collection',
+        'Research collaboration enhancement'
+      ];
+    }
   };
 
   return (
@@ -320,10 +442,6 @@ const MutationTracker = () => {
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
               <CircularProgress />
-            </Box>
-          ) : error ? (
-            <Box sx={{ p: 3 }}>
-              <Alert severity="error">{error}</Alert>
             </Box>
           ) : (
             <Table sx={{ minWidth: 650 }} aria-label="mutations table">
@@ -571,6 +689,10 @@ const MutationTracker = () => {
                 variant="contained" 
                 color="primary"
                 startIcon={<InfoIcon />}
+                onClick={() => {
+                  handleCloseDetails();
+                  handleRunAnalysis(selectedMutation);
+                }}
               >
                 Run Analysis
               </Button>
@@ -639,6 +761,381 @@ const MutationTracker = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Analysis Report Dialog */}
+      <Dialog
+        open={analysisOpen}
+        onClose={() => setAnalysisOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: { minHeight: '80vh' }
+        }}
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AssessmentIcon color="primary" />
+            <Typography variant="h6">
+              Mutation Analysis Report
+            </Typography>
+            {analysisReport && (
+              <Chip 
+                label={`Confidence: ${analysisReport.analysisResults.confidence}%`}
+                color="primary"
+                size="small"
+              />
+            )}
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent dividers>
+          {analysisLoading ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <CircularProgress size={60} />
+              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+                Analyzing Mutation...
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Running genomic analysis, risk assessment, and epidemiological modeling
+              </Typography>
+              <LinearProgress sx={{ mt: 3, mb: 2 }} />
+              <Typography variant="body2" color="text.secondary">
+                This may take a few moments
+              </Typography>
+            </Box>
+          ) : analysisReport ? (
+            <Box>
+              {/* Report Header */}
+              <Card sx={{ mb: 3, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                <CardContent>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={8}>
+                      <Typography variant="h6" gutterBottom>
+                        {analysisReport.mutation.virus_name} - {analysisReport.mutation.mutation_type}
+                      </Typography>
+                      <Typography variant="body2">
+                        Report ID: {analysisReport.id}
+                      </Typography>
+                      <Typography variant="body2">
+                        Generated: {analysisReport.generatedDate}
+                      </Typography>
+                      <Typography variant="body2">
+                        Location: {analysisReport.mutation.location.city}, {analysisReport.mutation.location.country}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="h3" fontWeight="bold">
+                          {(analysisReport.analysisResults.riskAssessment.overallRisk * 100).toFixed(0)}%
+                        </Typography>
+                        <Typography variant="body2">
+                          Overall Risk Score
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+
+              {/* Risk Assessment */}
+              <Accordion defaultExpanded>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SecurityIcon color="error" />
+                    <Typography variant="h6">Risk Assessment</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" gutterBottom>Transmissibility Risk</Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={analysisReport.analysisResults.riskAssessment.transmissibilityRisk * 100}
+                        color={analysisReport.analysisResults.riskAssessment.transmissibilityRisk > 0.7 ? 'error' : 'warning'}
+                        sx={{ height: 8, borderRadius: 4 }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {(analysisReport.analysisResults.riskAssessment.transmissibilityRisk * 100).toFixed(1)}%
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" gutterBottom>Severity Risk</Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={analysisReport.analysisResults.riskAssessment.severityRisk * 100}
+                        color={analysisReport.analysisResults.riskAssessment.severityRisk > 0.7 ? 'error' : 'warning'}
+                        sx={{ height: 8, borderRadius: 4 }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {(analysisReport.analysisResults.riskAssessment.severityRisk * 100).toFixed(1)}%
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" gutterBottom>Vaccine Evasion Risk</Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={analysisReport.analysisResults.riskAssessment.vaccineEvasionRisk * 100}
+                        color={analysisReport.analysisResults.riskAssessment.vaccineEvasionRisk > 0.7 ? 'error' : 'warning'}
+                        sx={{ height: 8, borderRadius: 4 }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {(analysisReport.analysisResults.riskAssessment.vaccineEvasionRisk * 100).toFixed(1)}%
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" gutterBottom>Therapeutic Resistance Risk</Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={analysisReport.analysisResults.riskAssessment.therapeuticResistanceRisk * 100}
+                        color={analysisReport.analysisResults.riskAssessment.therapeuticResistanceRisk > 0.7 ? 'error' : 'warning'}
+                        sx={{ height: 8, borderRadius: 4 }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {(analysisReport.analysisResults.riskAssessment.therapeuticResistanceRisk * 100).toFixed(1)}%
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Genomic Analysis */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <InfoIcon color="primary" />
+                    <Typography variant="h6">Genomic Analysis</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Card variant="outlined">
+                        <CardContent>
+                          <Typography variant="subtitle1" gutterBottom>Sequence Properties</Typography>
+                          <List dense>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Sequence Length" 
+                                secondary={`${analysisReport.analysisResults.genomicAnalysis.sequenceLength} nucleotides`}
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText 
+                                primary="GC Content" 
+                                secondary={`${analysisReport.analysisResults.genomicAnalysis.gcContent}%`}
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Novel Mutations" 
+                                secondary={`${analysisReport.analysisResults.genomicAnalysis.novelMutations} identified`}
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Conserved Regions" 
+                                secondary={`${analysisReport.analysisResults.genomicAnalysis.conservedRegions} maintained`}
+                              />
+                            </ListItem>
+                          </List>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Card variant="outlined">
+                        <CardContent>
+                          <Typography variant="subtitle1" gutterBottom>Functional Domains</Typography>
+                          <List dense>
+                            {analysisReport.analysisResults.genomicAnalysis.functionalDomains.map((domain, index) => (
+                              <ListItem key={index}>
+                                <ListItemIcon>
+                                  <Chip label={index + 1} size="small" color="primary" />
+                                </ListItemIcon>
+                                <ListItemText primary={domain} />
+                              </ListItem>
+                            ))}
+                          </List>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Epidemiological Impact */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <PublicIcon color="warning" />
+                    <Typography variant="h6">Epidemiological Impact</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Card variant="outlined" sx={{ textAlign: 'center', p: 2 }}>
+                        <Typography variant="h4" color="primary">
+                          {analysisReport.analysisResults.epidemiologicalImpact.estimatedR0Change > 0 ? '+' : ''}
+                          {analysisReport.analysisResults.epidemiologicalImpact.estimatedR0Change}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Estimated R₀ Change
+                        </Typography>
+                      </Card>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Card variant="outlined" sx={{ textAlign: 'center', p: 2 }}>
+                        <Typography variant="h4" color="primary">
+                          {(analysisReport.analysisResults.epidemiologicalImpact.populationAtRisk / 1000000).toFixed(1)}M
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Population at Risk
+                        </Typography>
+                      </Card>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Card variant="outlined" sx={{ textAlign: 'center', p: 2 }}>
+                        <Typography variant="h4" color="primary">
+                          {analysisReport.analysisResults.epidemiologicalImpact.timeToDoubling}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Days to Doubling
+                        </Typography>
+                      </Card>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Card variant="outlined" sx={{ textAlign: 'center', p: 2 }}>
+                        <Typography variant="h4" color="primary">
+                          {analysisReport.analysisResults.dataQuality}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Data Quality
+                        </Typography>
+                      </Card>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Alert severity="info">
+                        <Typography variant="subtitle2" gutterBottom>Geographic Spread Prediction</Typography>
+                        <Typography variant="body2">
+                          {analysisReport.analysisResults.epidemiologicalImpact.geographicSpread}
+                        </Typography>
+                      </Alert>
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Recommendations */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <RecommendIcon color="success" />
+                    <Typography variant="h6">Recommendations</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <List>
+                    {analysisReport.analysisResults.recommendations.map((recommendation, index) => (
+                      <ListItem key={index}>
+                        <ListItemIcon>
+                          <Chip 
+                            label={index + 1} 
+                            size="small" 
+                            color={index < 3 ? "error" : index < 5 ? "warning" : "success"} 
+                          />
+                        </ListItemIcon>
+                        <ListItemText 
+                          primary={recommendation}
+                          secondary={index < 3 ? "High Priority" : index < 5 ? "Medium Priority" : "Standard Priority"}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            </Box>
+          ) : null}
+        </DialogContent>
+        
+        <DialogActions>
+          <Button onClick={() => setAnalysisOpen(false)}>
+            Close
+          </Button>
+          {analysisReport && (
+            <Button 
+              variant="contained" 
+              startIcon={<DownloadIcon />}
+              onClick={() => {
+                // Generate and download report
+                const reportContent = `
+VIRALYTIX MUTATION ANALYSIS REPORT
+Report ID: ${analysisReport.id}
+Generated: ${analysisReport.generatedDate}
+
+MUTATION DETAILS:
+- Virus: ${analysisReport.mutation.virus_name}
+- Type: ${analysisReport.mutation.mutation_type}
+- Location: ${analysisReport.mutation.location.city}, ${analysisReport.mutation.location.country}
+- Detection Date: ${analysisReport.mutation.date_detected}
+
+RISK ASSESSMENT:
+- Overall Risk: ${(analysisReport.analysisResults.riskAssessment.overallRisk * 100).toFixed(1)}%
+- Transmissibility Risk: ${(analysisReport.analysisResults.riskAssessment.transmissibilityRisk * 100).toFixed(1)}%
+- Severity Risk: ${(analysisReport.analysisResults.riskAssessment.severityRisk * 100).toFixed(1)}%
+- Vaccine Evasion Risk: ${(analysisReport.analysisResults.riskAssessment.vaccineEvasionRisk * 100).toFixed(1)}%
+
+GENOMIC ANALYSIS:
+- Sequence Length: ${analysisReport.analysisResults.genomicAnalysis.sequenceLength} nucleotides
+- GC Content: ${analysisReport.analysisResults.genomicAnalysis.gcContent}%
+- Novel Mutations: ${analysisReport.analysisResults.genomicAnalysis.novelMutations}
+- Functional Domains: ${analysisReport.analysisResults.genomicAnalysis.functionalDomains.join(', ')}
+
+EPIDEMIOLOGICAL IMPACT:
+- R₀ Change: ${analysisReport.analysisResults.epidemiologicalImpact.estimatedR0Change}
+- Population at Risk: ${analysisReport.analysisResults.epidemiologicalImpact.populationAtRisk.toLocaleString()}
+- Time to Doubling: ${analysisReport.analysisResults.epidemiologicalImpact.timeToDoubling} days
+- Geographic Spread: ${analysisReport.analysisResults.epidemiologicalImpact.geographicSpread}
+
+RECOMMENDATIONS:
+${analysisReport.analysisResults.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join('\n')}
+
+Analysis Confidence: ${analysisReport.analysisResults.confidence}%
+Data Quality: ${analysisReport.analysisResults.dataQuality}
+
+Generated by VIRALYTIX AI Platform
+                `;
+                
+                const blob = new Blob([reportContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `mutation_analysis_${analysisReport.mutation.id}_${new Date().toISOString().split('T')[0]}.txt`;
+                link.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              Download Report
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity="success" 
+          sx={{ width: '100%' }}
+        >
+          Analysis completed successfully! Report is ready for review.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
