@@ -45,22 +45,33 @@ class BackendService {
     this.listeners.forEach(callback => callback(status));
   }
 
-  // Check if backend is online
+  // Check if backend is online with improved error handling
   async checkBackendStatus() {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // Reduced timeout
+      
       const response = await axios.get(`${this.baseURL}/health`, {
-        timeout: 10000, // 10 second timeout
+        signal: controller.signal,
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
-        }
+        },
+        // Add retry configuration
+        validateStatus: (status) => status < 500, // Accept 4xx as valid responses
       });
+      
+      clearTimeout(timeoutId);
       
       const isHealthy = response.status === 200 && response.data.status === 'healthy';
       this.updateStatus(isHealthy);
       return isHealthy;
     } catch (error) {
-      console.log('Backend health check failed:', error.message);
+      if (error.name === 'AbortError') {
+        console.log('Backend health check timed out');
+      } else {
+        console.log('Backend health check failed:', error.message);
+      }
       this.updateStatus(false);
       return false;
     }
@@ -81,68 +92,127 @@ class BackendService {
     }
   }
 
-  // Wake up the backend (for Render cold starts)
+  // Wake up the backend with improved cold start handling
   async wakeUpBackend() {
     try {
       // Check if this is a Render service
       if (isRenderService(this.baseURL)) {
-        console.log('Detected Render service, using optimized wake-up strategy');
-        const result = await wakeUpRenderService(this.baseURL);
+        console.log('🔍 Detected Render service, using cold start optimized strategy');
+        
+        // Use optimized wake-up strategy for Render
+        const result = await wakeUpRenderService(this.baseURL, 3, 5000); // More retries, longer delays for cold starts
         
         if (result.success) {
-          // Monitor status to ensure it's fully online
+          // If it was a cold start, give it a moment to fully initialize
+          if (result.coldStart) {
+            console.log('❄️  Cold start detected, allowing time for full initialization...');
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+          
+          // Monitor status with appropriate timing for cold starts
           const statusResult = await monitorBackendStatus(
             () => this.checkBackendStatus(),
-            5, // max attempts
-            2000, // initial delay
-            10000 // max delay
+            6, // reasonable attempts
+            2000, // longer initial delay for cold starts
+            8000 // longer max delay
           );
           
           if (statusResult.success) {
             this.updateStatus(true);
-            return { 
-              success: true, 
-              message: `Backend is now online! (Started in ${result.attempt} attempt${result.attempt > 1 ? 's' : ''})` 
-            };
+            const message = result.coldStart 
+              ? `Backend started successfully! (Cold start took ${(result.responseTime/1000).toFixed(1)}s)`
+              : `Backend is now online! (Connected in ${statusResult.attempt} attempt${statusResult.attempt > 1 ? 's' : ''})`;
+            
+            return { success: true, message };
+          } else {
+            // Even if monitoring failed, the wake-up succeeded, so try once more
+            const finalCheck = await this.checkBackendStatus();
+            if (finalCheck) {
+              this.updateStatus(true);
+              return { 
+                success: true, 
+                message: 'Backend is online! (Connection verified after wake-up)' 
+              };
+            }
           }
         }
         
         return { 
           success: false, 
-          message: 'Failed to start Render backend. The service may be experiencing issues.' 
+          message: 'Failed to start backend. This might be due to a cold start taking longer than expected. Please wait a moment and try again.' 
         };
       } else {
-        // For non-Render services, use the original approach
-        const wakeUpPromise = axios.get(`${this.baseURL}/`, {
-          timeout: 30000,
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-
-        const healthPromise = axios.get(`${this.baseURL}/health`, {
-          timeout: 30000,
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-
-        const response = await Promise.race([wakeUpPromise, healthPromise]);
+        // For local/non-Render services, use faster approach
+        console.log('🏠 Local backend detected, using fast connection strategy');
         
-        if (response.status === 200) {
-          this.updateStatus(true);
-          return { success: true, message: 'Backend is now online!' };
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // Shorter timeout for local
+        
+        try {
+          // Try health endpoint first as it's faster
+          const healthResponse = await axios.get(`${this.baseURL}/health`, {
+            signal: controller.signal,
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (healthResponse.status === 200) {
+            this.updateStatus(true);
+            return { success: true, message: 'Local backend is online!' };
+          }
+        } catch (healthError) {
+          // If health fails, try root endpoint
+          try {
+            const rootResponse = await axios.get(`${this.baseURL}/`, {
+              signal: controller.signal,
+              headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (rootResponse.status === 200) {
+              this.updateStatus(true);
+              return { success: true, message: 'Local backend is online!' };
+            }
+          } catch (rootError) {
+            clearTimeout(timeoutId);
+            throw rootError;
+          }
         }
+        
+        return { 
+          success: false, 
+          message: 'Local backend is not responding. Please make sure it is running.' 
+        };
       }
     } catch (error) {
       console.error('Failed to wake up backend:', error);
       this.updateStatus(false);
-      return { 
-        success: false, 
-        message: 'Failed to start backend. Please try again in a few moments.' 
-      };
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        return { 
+          success: false, 
+          message: 'Connection timed out. The backend might be starting up - please try again in a moment.' 
+        };
+      } else if (error.code === 'ECONNREFUSED') {
+        return { 
+          success: false, 
+          message: 'Connection refused. Please check if the backend server is running.' 
+        };
+      } else {
+        return { 
+          success: false, 
+          message: 'Failed to connect to backend. Please try again in a few moments.' 
+        };
+      }
     }
   }
 

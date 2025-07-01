@@ -6,28 +6,27 @@ import os
 import traceback
 from datetime import datetime
 from dotenv import load_dotenv
+import asyncio
+import logging
 
-# Import routers
-from routers.auth import router as auth
-from routers.mutations import router as mutations
-from routers.outbreaks import router as outbreaks
-from routers.predictions import router as predictions
-from routers.sensors import router as sensors
-from routers.blockchain import router as blockchain
-from routers.llm import router as llm
-from routers.simulation import router as simulation
-from routers.mutation_vaccine import router as mutation_vaccine
-from routers.explainability import router as explainability
-from routers.anonymous_alert import router as anonymous_alert
+# Configure logging for better debugging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
 
+# Create FastAPI app with optimized settings
 app = FastAPI(
     title="VIRALYTIX API",
     description="Backend API for the VIRALYTIX platform",
-    version="0.1.0"
+    version="0.1.0",
+    docs_url="/docs" if os.getenv("ENVIRONMENT") != "production" else None,
+    redoc_url="/redoc" if os.getenv("ENVIRONMENT") != "production" else None
 )
+
+# Global state for lazy loading
+_routers_loaded = False
 
 # Configure CORS
 def get_cors_origins():
@@ -82,35 +81,76 @@ async def global_exception_handler(request: Request, exc: Exception):
             }
         )
 
-# Include routers
-app.include_router(auth, prefix="/api/auth", tags=["Authentication"])
-app.include_router(mutations, prefix="/api/mutations", tags=["Mutations"])
-app.include_router(outbreaks, prefix="/api/outbreaks", tags=["Outbreaks"])
-app.include_router(predictions, prefix="/api/predictions", tags=["Predictions"])
-app.include_router(sensors, prefix="/api/sensors", tags=["Sensors"])
-app.include_router(blockchain, prefix="/api/blockchain", tags=["Blockchain"])
-app.include_router(llm, prefix="/api/llm", tags=["LLM"])
-app.include_router(simulation, prefix="/api/simulation", tags=["Simulation"])
-app.include_router(mutation_vaccine, prefix="/api/mutation-vaccine", tags=["Mutation Vaccine"])
-app.include_router(explainability, prefix="/api/explainability", tags=["Explainability"])
-app.include_router(anonymous_alert, prefix="/api/anonymous-alert", tags=["Anonymous Alert"])
+async def load_routers():
+    """Lazy load routers to improve startup time"""
+    global _routers_loaded
+    if _routers_loaded:
+        return
+    
+    logger.info("Loading routers...")
+    try:
+        # Import routers only when needed
+        from routers.auth import router as auth
+        from routers.mutations import router as mutations
+        from routers.outbreaks import router as outbreaks
+        from routers.predictions import router as predictions
+        from routers.sensors import router as sensors
+        from routers.blockchain import router as blockchain
+        from routers.llm import router as llm
+        from routers.simulation import router as simulation
+        from routers.mutation_vaccine import router as mutation_vaccine
+        from routers.explainability import router as explainability
+        from routers.anonymous_alert import router as anonymous_alert
+
+        # Include routers
+        app.include_router(auth, prefix="/api/auth", tags=["Authentication"])
+        app.include_router(mutations, prefix="/api/mutations", tags=["Mutations"])
+        app.include_router(outbreaks, prefix="/api/outbreaks", tags=["Outbreaks"])
+        app.include_router(predictions, prefix="/api/predictions", tags=["Predictions"])
+        app.include_router(sensors, prefix="/api/sensors", tags=["Sensors"])
+        app.include_router(blockchain, prefix="/api/blockchain", tags=["Blockchain"])
+        app.include_router(llm, prefix="/api/llm", tags=["LLM"])
+        app.include_router(simulation, prefix="/api/simulation", tags=["Simulation"])
+        app.include_router(mutation_vaccine, prefix="/api/mutation-vaccine", tags=["Mutation Vaccine"])
+        app.include_router(explainability, prefix="/api/explainability", tags=["Explainability"])
+        app.include_router(anonymous_alert, prefix="/api/anonymous-alert", tags=["Anonymous Alert"])
+        
+        _routers_loaded = True
+        logger.info("All routers loaded successfully")
+    except Exception as e:
+        logger.error(f"Error loading routers: {e}")
+        raise
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize the application on startup"""
+    logger.info("Starting VIRALYTIX API...")
+    # Load routers asynchronously
+    await load_routers()
+    logger.info("VIRALYTIX API startup complete")
 
 @app.get("/", tags=["Root"])
 async def root():
     """Root endpoint to verify API is running"""
+    # Ensure routers are loaded when first accessed
+    await load_routers()
     return {
         "message": "Welcome to VIRALYTIX API",
         "status": "operational",
-        "version": "0.1.0"
+        "version": "0.1.0",
+        "routers_loaded": _routers_loaded,
+        "timestamp": datetime.utcnow().isoformat()
     }
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint"""
+    """Fast health check endpoint - optimized for quick response"""
+    # Don't load routers for health check to keep it fast
     health_status = {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "environment": os.getenv("ENVIRONMENT", "development"),
+        "routers_loaded": _routers_loaded,
         "services": {
             "api": "operational",
             "auth": "operational"
@@ -144,7 +184,19 @@ async def health_check():
     return health_status
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
-    host = os.getenv("HOST", "0.0.0.0")
-    reload = os.getenv("ENVIRONMENT") != "production"
-    uvicorn.run("main:app", host=host, port=port, reload=reload)
+    # Import and use startup optimizer
+    try:
+        from startup_optimizer import StartupOptimizer
+        optimizer = StartupOptimizer()
+        optimizer.optimize_imports()
+        settings = optimizer.optimize_uvicorn_settings()
+        
+        logger.info(f"Starting server with optimized settings: {settings}")
+        uvicorn.run("main:app", **settings)
+    except ImportError:
+        # Fallback to original settings if optimizer is not available
+        logger.warning("Startup optimizer not available, using default settings")
+        port = int(os.getenv("PORT", 8000))
+        host = os.getenv("HOST", "0.0.0.0")
+        reload = os.getenv("ENVIRONMENT") != "production"
+        uvicorn.run("main:app", host=host, port=port, reload=reload)

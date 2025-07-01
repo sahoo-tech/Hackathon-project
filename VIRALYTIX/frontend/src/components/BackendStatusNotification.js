@@ -182,10 +182,26 @@ const BackendStatusNotification = () => {
 
   const handleStartBackend = async () => {
     setIsStarting(true);
-    setMessage('Starting backend server...');
+    setMessage('Connecting to backend server...');
+    
+    // Show progress messages to reduce perceived wait time
+    const progressMessages = [
+      'Connecting to backend server...',
+      'Waking up the service...',
+      'Initializing components...',
+      'Almost ready...'
+    ];
+    
+    let messageIndex = 0;
+    const messageInterval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % progressMessages.length;
+      setMessage(progressMessages[messageIndex]);
+    }, 3000);
     
     try {
       const result = await backendService.wakeUpBackend();
+      
+      clearInterval(messageInterval);
       
       if (result.success) {
         setShowSuccess(true);
@@ -196,13 +212,14 @@ const BackendStatusNotification = () => {
         }, 2000);
       } else {
         setShowError(true);
-        setMessage(result.message);
-        setTimeout(() => setShowError(false), 5000);
+        setMessage(result.message || 'Failed to start backend. This might be due to a cold start - please try again.');
+        setTimeout(() => setShowError(false), 6000);
       }
     } catch (error) {
+      clearInterval(messageInterval);
       setShowError(true);
-      setMessage('Failed to start backend. Please try again.');
-      setTimeout(() => setShowError(false), 5000);
+      setMessage('Connection failed. The backend might be starting up - please wait a moment and try again.');
+      setTimeout(() => setShowError(false), 6000);
     } finally {
       setIsStarting(false);
     }
@@ -407,7 +424,7 @@ const BackendStatusNotification = () => {
           icon={<CircularProgress size={20} color="inherit" />}
         >
           <AlertTitle>Please Wait</AlertTitle>
-          Starting backend server... This may take up to 30 seconds.
+          {message || 'Starting backend server... This may take up to 20 seconds.'}
         </Alert>
       </Snackbar>
     </>
