@@ -284,10 +284,3 @@ Comprehensive API documentation is available at `http://localhost:8000/docs` whe
 - Blockchain integration
 - Anonymous reporting
 
-## Contributing
-
-We welcome contributions to VIRALYTIX! Please read our contributing guidelines and submit pull requests for any improvements.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
